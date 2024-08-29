@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Lossless Music Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #333;
+        }
+        audio {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px 0;
+        }
+        .track-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .track-list li {
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            border-radius: 5px;
+        }
+        img {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>My Lossless Music Player</h1>
+    <ul class="track-list">
+        <!-- Add your tracks here -->
+    </ul>
+    <img id="coverArt" src="" alt="Cover Art" style="display: none;">
+    <h2 id="trackTitle"></h2>
+    <h3 id="trackArtist"></h3>
+    <audio id="audioPlayer" controls>
+        <source id="audioSource" src="" type="audio/flac">
+        Your browser does not support the audio element.
+    </audio>
+    <script src="https://cdn.jsdelivr.net/npm/music-metadata-browser/dist/music-metadata-browser.min.js"></script>
+    <script>
+        const tracks = [
+            { name: "Track 1", file: "track1.flac" },
+            { name: "Track 2", file: "track2.wav" },
+            { name: "Track 3", file: "track3.alac" },
+            { name: "Track 4", file: "track4.m4a" }
+        ];
+
+        const trackListElement = document.querySelector('.track-list');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioSource = document.getElementById('audioSource');
+        const coverArtElement = document.getElementById('coverArt');
+        const trackTitleElement = document.getElementById('trackTitle');
+        const trackArtistElement = document.getElementById('trackArtist');
+
+        async function playTrack(file) {
+            audioSource.src = file;
+            audioPlayer.load();
+            audioPlayer.play();
+
+            const metadata = await musicMetadata.parseBlob(await fetch(file).then(r => r.blob()));
+            
+            trackTitleElement.textContent = metadata.common.title || 'Unknown Title';
+            trackArtistElement.textContent = metadata.common.artist || 'Unknown Artist';
+
+            if (metadata.common.picture && metadata.common.picture.length > 0) {
+                const coverArtBlob = new Blob([metadata.common.picture[0].data], { type: metadata.common.picture[0].format });
+                const coverArtUrl = URL.createObjectURL(coverArtBlob);
+                coverArtElement.src = coverArtUrl;
+                coverArtElement.style.display = 'block';
+            } else {
+                coverArtElement.style.display = 'none';
+            }
+        }
+
+        tracks.forEach(track => {
+            const li = document.createElement('li');
+            const button = document.createElement('button');
+            button.textContent = track.name;
+            button.onclick = () => playTrack(track.file);
+            li.appendChild(button);
+            trackListElement.appendChild(li);
+        });
+    </script>
+</body>
+</html>
